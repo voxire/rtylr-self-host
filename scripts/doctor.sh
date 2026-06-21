@@ -47,7 +47,7 @@ if [ -f .env ]; then
   if grep -Eq '^RTYLR_LICENSE_KEY=.+$' .env; then
     pass "RTYLR_LICENSE_KEY is set"
   else
-    warn "RTYLR_LICENSE_KEY is empty; the backend's license check against https://license.voxire.com will fail until sales issues a key"
+    warn "RTYLR_LICENSE_KEY is not set — set the license key Voxire provided"
   fi
 
   if grep -Eq '^JWT_SECRET=change_me' .env || ! grep -Eq '^JWT_SECRET=.{32,}$' .env; then

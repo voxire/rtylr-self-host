@@ -54,9 +54,9 @@ set_env "MYSQL_PASSWORD" "$mysql_password"
 set_env "MYSQL_ROOT_PASSWORD" "$mysql_root_password"
 set_env "DB_PASSWORD" "$mysql_password"
 
-# Prompt for the sales-issued license key (optional now; can be set later).
+# Prompt for the license key (optional now; can be set later).
 if [ -t 0 ]; then
-  printf "Enter your rtylr license key (from Voxire sales), or leave blank to set later: "
+  printf "Enter your rtylr license key (provided by Voxire), or leave blank to set later: "
   read -r license_key || license_key=""
   if [ -n "$license_key" ]; then
     set_env "RTYLR_LICENSE_KEY" "$license_key"
@@ -65,7 +65,6 @@ fi
 
 echo
 echo "Created .env with generated local secrets."
-echo "The backend validates RTYLR_LICENSE_KEY against https://license.voxire.com."
 echo
 if ! grep -Eq '^RTYLR_LICENSE_KEY=.+$' .env; then
   echo "Next: set RTYLR_LICENSE_KEY in .env, then start the stack."

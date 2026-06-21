@@ -13,7 +13,6 @@ Apps are exposed via Ingress on these hosts (base domain: {{ .Values.ingress.dom
 {{- end }}
 {{- end }}
 
-The backend validates RTYLR_LICENSE_KEY against https://license.voxire.com.
 {{- if not .Values.license.key }}
 {{- if not .Values.license.existingSecret }}
 

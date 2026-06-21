@@ -15,13 +15,9 @@ object storage.
   `insights`, `recruit`, `menu`
 - Optional bundled datastores (MySQL, Redis, floci S3) — or bring your own
 
-The **only** external dependency is the hosted license authority
-`https://license.voxire.com`, which the backend contacts to validate your
-license key. See [docs/license.md](docs/license.md).
-
 ## Requirements
 
-- A license key from Voxire sales (set as `RTYLR_LICENSE_KEY`)
+- A license key from Voxire (set as `RTYLR_LICENSE_KEY`)
 - Helm 3.8+ and a Kubernetes cluster, **or** Docker + Compose v2
 
 ## Quick Start — Helm (primary)
@@ -35,8 +31,8 @@ helm upgrade --install rtylr ./helm/rtylr \
 ```
 
 Add `--set localInfra.mysql.enabled=true` (etc.) to bundle datastores, or point
-`database.*` / `redis.url` / `s3.*` at your own. Full reference:
-[docs/helm.md](docs/helm.md).
+`database.*` / `redis.url` / `s3.*` at your own. Full reference: the
+**Self-Hosting** section of the rtylr docs app.
 
 ## Quick Start — Docker Compose
 
@@ -54,19 +50,20 @@ docker compose --env-file .env up -d
 
 Local URLs (with `RTYLR_DOMAIN=localhost`): `http://dash.localhost`,
 `http://auth.localhost`, `http://api.localhost`, `http://upload.localhost`, and
-one per app. Full reference: [docs/compose.md](docs/compose.md).
+one per app. Full reference: the **Self-Hosting** section of the rtylr docs app.
 
 ## Configuration
 
 Every app URL is configurable (no hosted domains are hardcoded). Set
 `RTYLR_LICENSE_KEY`, `DEPLOYMENT_MODE=self_hosted`, the app URLs, and your
-datastore config. See [docs/backend-env.md](docs/backend-env.md).
+datastore config. See the backend env reference in the **Self-Hosting** section
+of the rtylr docs app.
 
 ## Versioning
 
 A single `RTYLR_VERSION` (in `versions.env`, e.g. `1.0.0`) pins all images to
 the same tag. Upgrade with `./scripts/update.sh <version>` (Compose) or
-`--set image.tag=<version>` (Helm). See [docs/upgrade.md](docs/upgrade.md).
+`--set image.tag=<version>` (Helm).
 
 ## Backups
 
@@ -78,19 +75,13 @@ When using your own MySQL/S3, back those up with your provider's tooling.
 
 ## Documentation
 
-- [Architecture](docs/architecture.md)
-- [License flow](docs/license.md)
-- [DNS setup](docs/dns.md)
-- [Helm install](docs/helm.md)
-- [Compose reference](docs/compose.md)
-- [Backend env reference](docs/backend-env.md)
-- [Image list](docs/images.md)
-- [Upgrade flow](docs/upgrade.md)
+Full self-hosting documentation — architecture, install (Helm & Compose), DNS,
+backend environment reference, image list, and upgrades — lives at
+**https://docs.rtylr.com/self-hosting/**.
 
 ## Notes
 
 - Upload traffic goes to the upload service (`UPLOAD_URL`), not the API service.
-- There is no license service to run — the backend validates against
-  `https://license.voxire.com`.
+- Set `RTYLR_LICENSE_KEY` to the license key Voxire provided.
 - Keep `.env` private. It contains database passwords, service tokens, upload
   keys, and the license key.

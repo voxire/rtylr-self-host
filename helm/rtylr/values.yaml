@@ -1,7 +1,4 @@
 # Default values for the rtylr self-host chart.
-# The only external dependency is the hosted license authority
-# (https://license.voxire.com), contacted by the api service. There is NO local
-# license chart or service.
 
 image:
   registry: docker.io
@@ -15,8 +12,8 @@ imagePullSecrets: []
 
 # License + deployment mode.
 license:
-  # The sales-issued license key. Prefer setting this via --set-string or an
-  # existing secret (see license.existingSecret).
+  # Your rtylr license key (provided by Voxire). Prefer setting this via
+  # --set-string or an existing secret (see license.existingSecret).
   key: ""
   # If set, the key is read from this existing Secret instead of license.key.
   existingSecret: ""

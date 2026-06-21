@@ -4,10 +4,6 @@
 # - To run fully self-contained: docker compose --profile local-infra up -d
 # - To bring your own MySQL/Redis/S3: leave the profile off and point
 #   DB_HOST / REDIS_URL / S3_* at your external services in .env.
-#
-# The only external dependency is the hosted license authority
-# (https://license.voxire.com), contacted by the `api` service. There is no
-# local license service.
 
 x-rtylr-image-defaults: &image-defaults
   restart: unless-stopped

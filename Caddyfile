@@ -14,7 +14,7 @@ http://api.{$RTYLR_DOMAIN:localhost} {
 	reverse_proxy api:9999
 }
 
-# Media / CDN (self-host analog of cdn.voxire.com)
+# Media / CDN
 http://upload.{$RTYLR_DOMAIN:localhost} {
 	reverse_proxy upload:8080
 }
