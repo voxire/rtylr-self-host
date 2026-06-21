@@ -39,7 +39,6 @@ urls:
   insights: http://insights.localhost
   recruit: http://recruit.localhost
   menu: http://menu.localhost
-  docs: http://docs.localhost
   api: http://api.localhost
   upload: http://upload.localhost
 
@@ -129,9 +128,6 @@ frontends:
     enabled: true
     replicas: 1
   menu:
-    enabled: true
-    replicas: 1
-  docs:
     enabled: true
     replicas: 1
 

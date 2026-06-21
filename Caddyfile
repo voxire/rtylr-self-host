@@ -63,7 +63,3 @@ http://recruit.{$RTYLR_DOMAIN:localhost} {
 http://menu.{$RTYLR_DOMAIN:localhost} {
 	reverse_proxy menu:8080
 }
-
-http://docs.{$RTYLR_DOMAIN:localhost} {
-	reverse_proxy docs:8080
-}

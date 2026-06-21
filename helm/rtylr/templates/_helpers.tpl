@@ -34,7 +34,7 @@ helm.sh/chart: {{ printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" }}
 {{/* CORS origins derived from the configured frontend URLs */}}
 {{- define "rtylr.corsOrigins" -}}
 {{- $u := .Values.urls -}}
-{{- printf "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s" $u.auth $u.dash $u.pos $u.erp $u.hr $u.crm $u.finance $u.flow $u.insights $u.recruit $u.menu $u.docs -}}
+{{- printf "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s" $u.auth $u.dash $u.pos $u.erp $u.hr $u.crm $u.finance $u.flow $u.insights $u.recruit $u.menu -}}
 {{- end -}}
 
 {{/* envFrom block shared by backend services */}}

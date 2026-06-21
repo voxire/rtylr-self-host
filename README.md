@@ -11,8 +11,8 @@ object storage.
 ## What you get
 
 - Backend: `rtylr/api` (9999), `rtylr/worker`, `rtylr/upload` (8080)
-- 12 frontends: `auth`, `dash`, `pos`, `erp`, `hr`, `crm`, `finance`, `flow`,
-  `insights`, `recruit`, `menu`, `docs`
+- 11 frontends: `auth`, `dash`, `pos`, `erp`, `hr`, `crm`, `finance`, `flow`,
+  `insights`, `recruit`, `menu`
 - Optional bundled datastores (MySQL, Redis, floci S3) — or bring your own
 
 The **only** external dependency is the hosted license authority

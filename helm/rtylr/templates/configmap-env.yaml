@@ -19,7 +19,6 @@ data:
   INSIGHTS_URL: {{ .Values.urls.insights | quote }}
   RECRUIT_URL: {{ .Values.urls.recruit | quote }}
   MENU_URL: {{ .Values.urls.menu | quote }}
-  DOCS_URL: {{ .Values.urls.docs | quote }}
   API_URL: {{ .Values.urls.api | quote }}
   UPLOAD_URL: {{ .Values.urls.upload | quote }}
   CORS_ALLOWED_ORIGINS: {{ include "rtylr.corsOrigins" . | quote }}

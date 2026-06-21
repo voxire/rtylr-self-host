@@ -19,7 +19,7 @@ authority is hardcoded. See [license.md](license.md).
 
 `AUTH_URL`, `DASH_URL`, `POS_URL`, `ERP_URL`, `HR_URL`, `CRM_URL`,
 `FINANCE_URL`, `FLOW_URL`, `INSIGHTS_URL`, `RECRUIT_URL`, `MENU_URL`,
-`DOCS_URL`, `API_URL`, `UPLOAD_URL`.
+`API_URL`, `UPLOAD_URL`.
 
 `CORS_ALLOWED_ORIGINS` is derived from the frontend URLs (Compose builds it in
 the compose file; Helm builds it in the ConfigMap).

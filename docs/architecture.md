@@ -56,7 +56,7 @@ service** in the self-host stack. See [license.md](license.md) for details.
 
 Every app URL is configurable (`AUTH_URL`, `DASH_URL`, `POS_URL`, `ERP_URL`,
 `HR_URL`, `CRM_URL`, `FINANCE_URL`, `FLOW_URL`, `INSIGHTS_URL`, `RECRUIT_URL`,
-`MENU_URL`, `DOCS_URL`, `API_URL`, `UPLOAD_URL`). The backend derives
+`MENU_URL`, `API_URL`, `UPLOAD_URL`). The backend derives
 `CORS_ALLOWED_ORIGINS` from the configured frontend URLs. No hosted domains are
 hardcoded in any image.
 

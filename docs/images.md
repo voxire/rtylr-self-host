@@ -22,8 +22,7 @@ tag. Images are tagged by version — not just `latest`.
 ## Frontend images (static nginx on :8080)
 
 `rtylr/auth`, `rtylr/dash`, `rtylr/pos`, `rtylr/erp`, `rtylr/hr`, `rtylr/crm`,
-`rtylr/finance`, `rtylr/flow`, `rtylr/insights`, `rtylr/recruit`, `rtylr/menu`,
-`rtylr/docs`.
+`rtylr/finance`, `rtylr/flow`, `rtylr/insights`, `rtylr/recruit`, `rtylr/menu`.
 
 Each frontend serves the compiled application on port `8080` and reads runtime
 configuration (`API_URL`, `UPLOAD_URL`, `AUTH_URL`, `DASH_URL`) from environment
