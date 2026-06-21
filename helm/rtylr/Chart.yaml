@@ -1,0 +1,12 @@
+apiVersion: v2
+name: rtylr
+description: Self-host Helm chart for the rtylr product (api, worker, upload, and all frontends). Optionally bundles MySQL, Redis, and floci object storage.
+type: application
+version: 0.1.0
+# appVersion is the default image tag; override with image.tag / RTYLR_VERSION.
+appVersion: "3.300.13"
+home: https://github.com/voxire/rtylr-self-host
+sources:
+  - https://github.com/voxire/rtylr-self-host
+maintainers:
+  - name: Voxire

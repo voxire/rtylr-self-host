@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "rtylr.fullname" . }}-api
+  labels:
+    {{- include "rtylr.labels" . | nindent 4 }}
+    app.kubernetes.io/name: api
+    app.kubernetes.io/component: backend
+spec:
+  replicas: {{ .Values.backend.api.replicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/name: api
+  template:
+    metadata:
+      labels:
+        {{- include "rtylr.labels" . | nindent 8 }}
+        app.kubernetes.io/name: api
+        app.kubernetes.io/component: backend
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: api
+          image: {{ include "rtylr.image" (list . "api") }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.backend.api.port }}
+          envFrom:
+            {{- include "rtylr.backendEnvFrom" . | nindent 12 }}
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.backend.api.port }}
+            initialDelaySeconds: 20
+            periodSeconds: 15
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.backend.api.port }}
+            initialDelaySeconds: 40
+            periodSeconds: 30
+          {{- with .Values.backend.api.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "rtylr.fullname" . }}-api
+  labels:
+    {{- include "rtylr.labels" . | nindent 4 }}
+    app.kubernetes.io/name: api
+spec:
+  selector:
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/name: api
+  ports:
+    - port: {{ .Values.backend.api.port }}
+      targetPort: {{ .Values.backend.api.port }}
+      name: http

@@ -1,0 +1,68 @@
+{{- if .Values.ingress.enabled }}
+{{- $root := . -}}
+{{- $fullname := include "rtylr.fullname" . -}}
+{{- $domain := .Values.ingress.domain -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ $fullname }}
+  labels:
+    {{- include "rtylr.labels" . | nindent 4 }}
+  {{- with .Values.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if .Values.ingress.className }}
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- end }}
+  {{- if .Values.ingress.tls.enabled }}
+  tls:
+    - hosts:
+        - api.{{ $domain }}
+        - upload.{{ $domain }}
+        {{- range $name, $cfg := .Values.frontends }}
+        {{- if $cfg.enabled }}
+        - {{ $name }}.{{ $domain }}
+        {{- end }}
+        {{- end }}
+      {{- if .Values.ingress.tls.secretName }}
+      secretName: {{ .Values.ingress.tls.secretName }}
+      {{- end }}
+  {{- end }}
+  rules:
+    - host: api.{{ $domain }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ $fullname }}-api
+                port:
+                  number: {{ .Values.backend.api.port }}
+    - host: upload.{{ $domain }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ $fullname }}-upload
+                port:
+                  number: {{ .Values.backend.upload.port }}
+    {{- range $name, $cfg := .Values.frontends }}
+    {{- if $cfg.enabled }}
+    - host: {{ $name }}.{{ $domain }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ $fullname }}-{{ $name }}
+                port:
+                  number: 8080
+    {{- end }}
+    {{- end }}
+{{- end }}

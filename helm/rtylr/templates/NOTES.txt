@@ -1,0 +1,28 @@
+rtylr self-host has been deployed.
+
+Release:  {{ .Release.Name }}
+Version:  {{ include "rtylr.imageTag" . }}
+Mode:     {{ .Values.deploymentMode }}
+
+Apps are exposed via Ingress on these hosts (base domain: {{ .Values.ingress.domain }}):
+  - api.{{ .Values.ingress.domain }}
+  - upload.{{ .Values.ingress.domain }}
+{{- range $name, $cfg := .Values.frontends }}
+{{- if $cfg.enabled }}
+  - {{ $name }}.{{ $.Values.ingress.domain }}
+{{- end }}
+{{- end }}
+
+The backend validates RTYLR_LICENSE_KEY against https://license.voxire.com.
+{{- if not .Values.license.key }}
+{{- if not .Values.license.existingSecret }}
+
+WARNING: no license key set. Set license.key (or license.existingSecret) before
+the stack is production-ready.
+{{- end }}
+{{- end }}
+
+Datastores:
+  MySQL: {{ if .Values.localInfra.mysql.enabled }}bundled (evaluation){{ else }}external @ {{ .Values.database.host }}{{ end }}
+  Redis: {{ if .Values.localInfra.redis.enabled }}bundled (evaluation){{ else }}external @ {{ .Values.redis.url }}{{ end }}
+  S3:    {{ if .Values.localInfra.floci.enabled }}bundled floci (evaluation){{ else }}external @ {{ .Values.s3.endpoint }}{{ end }}

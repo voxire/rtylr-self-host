@@ -1,0 +1,68 @@
+{{- $root := . -}}
+{{- range $name, $cfg := .Values.frontends }}
+{{- if $cfg.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "rtylr.fullname" $root }}-{{ $name }}
+  labels:
+    {{- include "rtylr.labels" $root | nindent 4 }}
+    app.kubernetes.io/name: {{ $name }}
+    app.kubernetes.io/component: frontend
+spec:
+  replicas: {{ $cfg.replicas | default 1 }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ $root.Release.Name }}
+      app.kubernetes.io/name: {{ $name }}
+  template:
+    metadata:
+      labels:
+        {{- include "rtylr.labels" $root | nindent 8 }}
+        app.kubernetes.io/name: {{ $name }}
+        app.kubernetes.io/component: frontend
+    spec:
+      {{- with $root.Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ $name }}
+          image: {{ include "rtylr.image" (list $root $name) }}
+          imagePullPolicy: {{ $root.Values.image.pullPolicy }}
+          ports:
+            - containerPort: 8080
+          env:
+            - name: API_URL
+              value: {{ $root.Values.urls.api | quote }}
+            - name: UPLOAD_URL
+              value: {{ $root.Values.urls.upload | quote }}
+            - name: AUTH_URL
+              value: {{ $root.Values.urls.auth | quote }}
+            - name: DASH_URL
+              value: {{ $root.Values.urls.dash | quote }}
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 15
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "rtylr.fullname" $root }}-{{ $name }}
+  labels:
+    {{- include "rtylr.labels" $root | nindent 4 }}
+    app.kubernetes.io/name: {{ $name }}
+spec:
+  selector:
+    app.kubernetes.io/instance: {{ $root.Release.Name }}
+    app.kubernetes.io/name: {{ $name }}
+  ports:
+    - port: 8080
+      targetPort: 8080
+      name: http
+{{- end }}
+{{- end }}

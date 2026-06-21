@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "rtylr.configMapName" . }}
+  labels:
+    {{- include "rtylr.labels" . | nindent 4 }}
+data:
+  DEPLOYMENT_MODE: {{ .Values.deploymentMode | quote }}
+  APP_ENV: {{ .Values.appEnv | quote }}
+  # Configurable URLs
+  AUTH_URL: {{ .Values.urls.auth | quote }}
+  DASH_URL: {{ .Values.urls.dash | quote }}
+  POS_URL: {{ .Values.urls.pos | quote }}
+  ERP_URL: {{ .Values.urls.erp | quote }}
+  HR_URL: {{ .Values.urls.hr | quote }}
+  CRM_URL: {{ .Values.urls.crm | quote }}
+  FINANCE_URL: {{ .Values.urls.finance | quote }}
+  FLOW_URL: {{ .Values.urls.flow | quote }}
+  INSIGHTS_URL: {{ .Values.urls.insights | quote }}
+  RECRUIT_URL: {{ .Values.urls.recruit | quote }}
+  MENU_URL: {{ .Values.urls.menu | quote }}
+  DOCS_URL: {{ .Values.urls.docs | quote }}
+  API_URL: {{ .Values.urls.api | quote }}
+  UPLOAD_URL: {{ .Values.urls.upload | quote }}
+  CORS_ALLOWED_ORIGINS: {{ include "rtylr.corsOrigins" . | quote }}
+  # Database
+  DB_HOST: {{ .Values.database.host | quote }}
+  DB_PORT: {{ .Values.database.port | quote }}
+  DB_NAME: {{ .Values.database.name | quote }}
+  DB_USER: {{ .Values.database.user | quote }}
+  # Cache
+  REDIS_URL: {{ .Values.redis.url | quote }}
+  # Object storage
+  S3_BUCKET_NAME: {{ .Values.s3.bucket | quote }}
+  S3_REGION: {{ .Values.s3.region | quote }}
+  S3_ENDPOINT: {{ .Values.s3.endpoint | quote }}
+  S3_FORCE_PATH_STYLE: {{ .Values.s3.forcePathStyle | quote }}
+  AWS_ACCESS_KEY_ID: {{ .Values.s3.accessKeyId | quote }}
+  CDN_MAX_UPLOAD_MB: {{ .Values.upload.maxUploadMb | quote }}
+  {{- range $k, $v := .Values.extraEnv }}
+  {{ $k }}: {{ $v | quote }}
+  {{- end }}

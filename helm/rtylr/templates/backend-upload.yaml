@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "rtylr.fullname" . }}-upload
+  labels:
+    {{- include "rtylr.labels" . | nindent 4 }}
+    app.kubernetes.io/name: upload
+    app.kubernetes.io/component: backend
+spec:
+  replicas: {{ .Values.backend.upload.replicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/name: upload
+  template:
+    metadata:
+      labels:
+        {{- include "rtylr.labels" . | nindent 8 }}
+        app.kubernetes.io/name: upload
+        app.kubernetes.io/component: backend
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: upload
+          image: {{ include "rtylr.image" (list . "upload") }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.backend.upload.port }}
+          envFrom:
+            {{- include "rtylr.backendEnvFrom" . | nindent 12 }}
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.backend.upload.port }}
+            initialDelaySeconds: 15
+            periodSeconds: 15
+          {{- with .Values.backend.upload.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "rtylr.fullname" . }}-upload
+  labels:
+    {{- include "rtylr.labels" . | nindent 4 }}
+    app.kubernetes.io/name: upload
+spec:
+  selector:
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/name: upload
+  ports:
+    - port: {{ .Values.backend.upload.port }}
+      targetPort: {{ .Values.backend.upload.port }}
+      name: http

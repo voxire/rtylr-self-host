@@ -1,0 +1,231 @@
+{{- $fullname := include "rtylr.fullname" . -}}
+{{- /* Bundled MySQL (evaluation only) */ -}}
+{{- if .Values.localInfra.mysql.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rtylr-mysql
+  labels:
+    {{- include "rtylr.labels" . | nindent 4 }}
+    app.kubernetes.io/name: mysql
+spec:
+  selector:
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/name: mysql
+  ports:
+    - port: 3306
+      targetPort: 3306
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: rtylr-mysql
+  labels:
+    {{- include "rtylr.labels" . | nindent 4 }}
+    app.kubernetes.io/name: mysql
+spec:
+  serviceName: rtylr-mysql
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/name: mysql
+  template:
+    metadata:
+      labels:
+        {{- include "rtylr.labels" . | nindent 8 }}
+        app.kubernetes.io/name: mysql
+    spec:
+      containers:
+        - name: mysql
+          image: {{ .Values.localInfra.mysql.image }}
+          ports:
+            - containerPort: 3306
+          env:
+            - name: MYSQL_DATABASE
+              value: {{ .Values.database.name | quote }}
+            - name: MYSQL_USER
+              value: {{ .Values.database.user | quote }}
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ if .Values.secrets.existingSecret }}{{ .Values.secrets.existingSecret }}{{ else }}{{ include "rtylr.secretName" . }}{{ end }}
+                  key: DB_PASSWORD
+            - name: MYSQL_ROOT_PASSWORD
+              value: {{ required "localInfra.mysql.rootPassword is required when localInfra.mysql.enabled" .Values.localInfra.mysql.rootPassword | quote }}
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/mysql
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: {{ .Values.localInfra.mysql.storage }}
+{{- end }}
+{{- /* Bundled Redis (evaluation only) */ -}}
+{{- if .Values.localInfra.redis.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rtylr-redis
+  labels:
+    {{- include "rtylr.labels" . | nindent 4 }}
+    app.kubernetes.io/name: redis
+spec:
+  selector:
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/name: redis
+  ports:
+    - port: 6379
+      targetPort: 6379
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: rtylr-redis
+  labels:
+    {{- include "rtylr.labels" . | nindent 4 }}
+    app.kubernetes.io/name: redis
+spec:
+  serviceName: rtylr-redis
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/name: redis
+  template:
+    metadata:
+      labels:
+        {{- include "rtylr.labels" . | nindent 8 }}
+        app.kubernetes.io/name: redis
+    spec:
+      containers:
+        - name: redis
+          image: {{ .Values.localInfra.redis.image }}
+          args: ["redis-server", "--appendonly", "yes"]
+          ports:
+            - containerPort: 6379
+          volumeMounts:
+            - name: data
+              mountPath: /data
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: {{ .Values.localInfra.redis.storage }}
+{{- end }}
+{{- /* Bundled floci object storage (evaluation only) */ -}}
+{{- if .Values.localInfra.floci.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rtylr-floci
+  labels:
+    {{- include "rtylr.labels" . | nindent 4 }}
+    app.kubernetes.io/name: floci
+spec:
+  selector:
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/name: floci
+  ports:
+    - port: 4566
+      targetPort: 4566
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: rtylr-floci
+  labels:
+    {{- include "rtylr.labels" . | nindent 4 }}
+    app.kubernetes.io/name: floci
+spec:
+  serviceName: rtylr-floci
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/name: floci
+  template:
+    metadata:
+      labels:
+        {{- include "rtylr.labels" . | nindent 8 }}
+        app.kubernetes.io/name: floci
+    spec:
+      containers:
+        - name: floci
+          image: {{ .Values.localInfra.floci.image }}
+          env:
+            - name: SERVICES
+              value: s3
+          ports:
+            - containerPort: 4566
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/localstack
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: {{ .Values.localInfra.floci.storage }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ $fullname }}-floci-init
+  labels:
+    {{- include "rtylr.labels" . | nindent 4 }}
+    app.kubernetes.io/name: floci-init
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 6
+  template:
+    metadata:
+      labels:
+        {{- include "rtylr.labels" . | nindent 8 }}
+        app.kubernetes.io/name: floci-init
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: create-bucket
+          image: amazon/aws-cli:2
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              bucket="${FLOCI_BUCKET}"
+              endpoint="${AWS_ENDPOINT_URL}"
+              i=0
+              until aws --endpoint-url "$endpoint" s3 mb "s3://${bucket}" >/dev/null 2>&1 || \
+                    aws --endpoint-url "$endpoint" s3 ls "s3://${bucket}" >/dev/null 2>&1; do
+                i=$((i + 1)); [ "$i" -ge 30 ] && { echo "floci not ready"; exit 1; }
+                sleep 2
+              done
+              echo "floci bucket ${bucket} ready"
+          env:
+            - name: FLOCI_BUCKET
+              value: {{ .Values.s3.bucket | quote }}
+            - name: AWS_ENDPOINT_URL
+              value: {{ .Values.s3.endpoint | quote }}
+            - name: AWS_DEFAULT_REGION
+              value: {{ .Values.s3.region | quote }}
+            - name: AWS_ACCESS_KEY_ID
+              value: {{ .Values.s3.accessKeyId | quote }}
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ if .Values.secrets.existingSecret }}{{ .Values.secrets.existingSecret }}{{ else }}{{ include "rtylr.secretName" . }}{{ end }}
+                  key: AWS_SECRET_ACCESS_KEY
+{{- end }}

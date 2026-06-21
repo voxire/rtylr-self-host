@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "rtylr.fullname" . }}-worker
+  labels:
+    {{- include "rtylr.labels" . | nindent 4 }}
+    app.kubernetes.io/name: worker
+    app.kubernetes.io/component: backend
+spec:
+  replicas: {{ .Values.backend.worker.replicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/name: worker
+  template:
+    metadata:
+      labels:
+        {{- include "rtylr.labels" . | nindent 8 }}
+        app.kubernetes.io/name: worker
+        app.kubernetes.io/component: backend
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: worker
+          image: {{ include "rtylr.image" (list . "worker") }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          envFrom:
+            {{- include "rtylr.backendEnvFrom" . | nindent 12 }}
+          {{- with .Values.backend.worker.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}

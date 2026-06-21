@@ -1,0 +1,165 @@
+# Default values for the rtylr self-host chart.
+# The only external dependency is the hosted license authority
+# (https://license.voxire.com), contacted by the api service. There is NO local
+# license chart or service.
+
+image:
+  registry: docker.io
+  namespace: rtylr
+  # Single global tag pins ALL images (backend + frontends). Equivalent to
+  # RTYLR_VERSION in versions.env. Defaults to .Chart.AppVersion when empty.
+  tag: ""
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+
+# License + deployment mode.
+license:
+  # The sales-issued license key. Prefer setting this via --set-string or an
+  # existing secret (see license.existingSecret).
+  key: ""
+  # If set, the key is read from this existing Secret instead of license.key.
+  existingSecret: ""
+  existingSecretKey: RTYLR_LICENSE_KEY
+
+deploymentMode: self_hosted
+appEnv: production
+
+# Configurable URLs (no hosted domains hardcoded). Set these to your real
+# domains in production.
+urls:
+  auth: http://auth.localhost
+  dash: http://dash.localhost
+  pos: http://pos.localhost
+  erp: http://erp.localhost
+  hr: http://hr.localhost
+  crm: http://crm.localhost
+  finance: http://finance.localhost
+  flow: http://flow.localhost
+  insights: http://insights.localhost
+  recruit: http://recruit.localhost
+  menu: http://menu.localhost
+  docs: http://docs.localhost
+  api: http://api.localhost
+  upload: http://upload.localhost
+
+# Secrets. Generate strong values before production.
+secrets:
+  jwtSecret: ""
+  internalToken: ""
+  cdnApiKey: ""
+  # Read all secret env from an existing Secret instead of the values above.
+  existingSecret: ""
+
+# Database. Point at your own MySQL, or enable the bundled one under
+# `localInfra.mysql`.
+database:
+  host: rtylr-mysql
+  port: 3306
+  name: rtylr_self_host
+  user: rtylr_user
+  password: ""
+
+# Cache. Point at your own Redis, or enable the bundled one.
+redis:
+  url: redis://rtylr-redis:6379
+
+# Object storage (S3-compatible). Point at your own, or enable bundled floci.
+s3:
+  bucket: rtylr-self-host
+  region: us-east-1
+  endpoint: http://rtylr-floci:4566
+  forcePathStyle: true
+  accessKeyId: rtylr
+  secretAccessKey: ""
+
+upload:
+  maxUploadMb: 100
+
+# Passthrough env applied to the backend services (api, worker, upload).
+# extraEnv values are plain (rendered into the ConfigMap); extraSecretEnv values
+# are sensitive (rendered into the Secret).
+extraEnv: {}
+extraSecretEnv: {}
+
+# Backend services.
+backend:
+  api:
+    replicas: 1
+    port: 9999
+    resources: {}
+  worker:
+    replicas: 1
+    resources: {}
+  upload:
+    replicas: 1
+    port: 8080
+    resources: {}
+
+# Frontends. Each is a static nginx serving on :8080.
+frontends:
+  auth:
+    enabled: true
+    replicas: 1
+  dash:
+    enabled: true
+    replicas: 1
+  pos:
+    enabled: true
+    replicas: 1
+  erp:
+    enabled: true
+    replicas: 1
+  hr:
+    enabled: true
+    replicas: 1
+  crm:
+    enabled: true
+    replicas: 1
+  finance:
+    enabled: true
+    replicas: 1
+  flow:
+    enabled: true
+    replicas: 1
+  insights:
+    enabled: true
+    replicas: 1
+  recruit:
+    enabled: true
+    replicas: 1
+  menu:
+    enabled: true
+    replicas: 1
+  docs:
+    enabled: true
+    replicas: 1
+
+# Ingress. One host per app/service derived from `domain`.
+ingress:
+  enabled: true
+  className: ""
+  # Subdomains are prefixed onto this base domain: auth.<domain>, api.<domain>...
+  domain: localhost
+  annotations: {}
+  tls:
+    enabled: false
+    # secretName: rtylr-tls
+
+# Optional bundled infrastructure. Enable any of these only when you are NOT
+# bringing your own. These are lightweight single-replica deployments intended
+# for evaluation; use a managed/HA datastore for production.
+localInfra:
+  mysql:
+    enabled: false
+    image: mysql:8.0
+    rootPassword: ""
+    storage: 10Gi
+  redis:
+    enabled: false
+    image: redis:7-alpine
+    storage: 2Gi
+  floci:
+    enabled: false
+    image: localstack/localstack:3
+    storage: 5Gi
